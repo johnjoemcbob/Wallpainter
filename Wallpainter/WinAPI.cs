@@ -7,7 +7,6 @@ using System.Runtime.InteropServices;
 
 namespace Wallpainter
 {
-
     class WinAPI
     {
         /// <summary>
@@ -39,7 +38,21 @@ namespace Wallpainter
             SMTO_ERRORONEXIT = 0x20
         }
 
-        public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
+		[StructLayout(LayoutKind.Sequential)]
+		public struct RECT
+		{
+			public int Left, Top, Right, Bottom;
+
+			public RECT(int left, int top, int right, int bottom)
+			{
+				Left = left;
+				Top = top;
+				Right = right;
+				Bottom = bottom;
+			}
+		}
+
+		public delegate bool EnumWindowsProc(IntPtr hWnd, IntPtr lParam);
 
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
@@ -69,8 +82,13 @@ namespace Wallpainter
         //Set window min/max/normal status
         [DllImport("user32.dll")]
         public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
-    }
 
+		[DllImport("user32.dll")]
+		public static extern bool SetWindowPos(IntPtr hWnd, IntPtr hWndInsertAfter, int X, int Y, int cx, int cy, uint uFlags);
+
+		[DllImport("user32.dll")]
+		public static extern bool GetWindowRect(IntPtr hWnd, out RECT lpRect);
+	}
 
     class Wallpainter
     {
@@ -87,12 +105,11 @@ namespace Wallpainter
             // that is in charge of fading the wallpaper background
             WinAPI.SendMessage(progman, WinAPI.SPAWN_WORKER, IntPtr.Zero, IntPtr.Zero);
 
-
-
             //This new worker window is a child of the SHELLDLL_DefView window, the default system shell window
             //Enumerate all the windows, looking for a "WorkerW" window that is an immediate sibling of "SHELLDLL_DefView"
             //And grab that window handle
             IntPtr workerw = IntPtr.Zero;
+			IntPtr topw = IntPtr.Zero;
             WinAPI.EnumWindows(new WinAPI.EnumWindowsProc((tophandle, topparamhandle) =>
             {
                 IntPtr p = WinAPI.FindWindowEx(tophandle, IntPtr.Zero, "SHELLDLL_DefView", null);
@@ -101,13 +118,14 @@ namespace Wallpainter
                 if (p != IntPtr.Zero)
                 {
                     workerw = WinAPI.FindWindowEx(IntPtr.Zero,  tophandle, "WorkerW", null);
-                }
+					topw = tophandle;
+				}
 
-                return true;
+				return true;
             }), IntPtr.Zero);
 
-            //Immediately hide the workerW window. Instead, we'll be parenting to the main progman 
-            WinAPI.ShowWindowAsync(workerw, 0);
+			//Immediately hide the workerW window. Instead, we'll be parenting to the main progman 
+			WinAPI.ShowWindowAsync(workerw, 0);
 
             return progman;
         }

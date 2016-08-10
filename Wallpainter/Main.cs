@@ -14,14 +14,37 @@ namespace Wallpainter
     {
         WallpaperManager mgr;
 
-        public WallpainterMain()
+		public WallpainterMain()
         {
             InitializeComponent();
 
             mgr = new WallpaperManager();
-        }
+		}
 
-        private void buttonAttach_Click(object sender, EventArgs e)
+		private void WallpainterMain_Resize(object sender, EventArgs e)
+		{
+			notifyIcon1.BalloonTipTitle = "Minimize to Tray App";
+			notifyIcon1.BalloonTipText = "You have successfully minimized your form.";
+
+			if (FormWindowState.Minimized == this.WindowState)
+			{
+				notifyIcon1.Visible = true;
+				notifyIcon1.ShowBalloonTip(500);
+				this.Hide();
+			}
+			else if (FormWindowState.Normal == this.WindowState)
+			{
+				notifyIcon1.Visible = false;
+			}
+		}
+
+		private void notifyIcon1_MouseDoubleClick(object sender, MouseEventArgs e)
+		{
+			this.Show();
+			this.WindowState = FormWindowState.Normal;
+		}
+
+		private void buttonAttach_Click(object sender, EventArgs e)
         {
             //TODO: Better window picker
             //Also ability to startup programs to set
@@ -31,8 +54,8 @@ namespace Wallpainter
                 MessageBox.Show("No window found!", "Failed to attach", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            
-            if (mgr.SetWallpaper(wndHandle))
+
+            if (mgr.SetWallpaper(wndHandle, (int) numericUpDownPosX.Value, (int) numericUpDownPosY.Value, (int) numericUpDownSizeX.Value, (int) numericUpDownSizeY.Value))
             {
                 buttonDetach.Enabled = true;
             }
@@ -49,5 +72,12 @@ namespace Wallpainter
             //Reset the wallpaper on exit
             mgr.SetWallpaper(IntPtr.Zero);
         }
-    }
+
+		private void notifyIcon1_MouseClick(object sender, MouseEventArgs e)
+		{
+			notifyIcon1.Visible = false;
+			this.Show();
+			this.WindowState = FormWindowState.Normal;
+		}
+	}
 }
