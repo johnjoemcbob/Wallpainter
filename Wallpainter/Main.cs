@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Diagnostics;
 
 namespace Wallpainter
 {
@@ -46,14 +47,27 @@ namespace Wallpainter
 
 		private void buttonAttach_Click(object sender, EventArgs e)
         {
-            //TODO: Better window picker
-            //Also ability to startup programs to set
-            IntPtr wndHandle = WinAPI.FindWindow(null, textboxWindowName.Text);
-            if (wndHandle == IntPtr.Zero)
-            {
+			//Also ability to startup programs to set
+			IntPtr wndHandle = IntPtr.Zero;
+			int matches = 0;
+			foreach (Process proc in Process.GetProcesses())
+			{
+				if (proc.MainWindowTitle.ToLower().Contains(textboxWindowName.Text.ToLower()))
+				{
+					wndHandle = proc.MainWindowHandle;
+					matches++;
+				}
+			}
+			if (wndHandle == IntPtr.Zero)
+			{
                 MessageBox.Show("No window found!", "Failed to attach", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
+			if (matches > 1)
+			{
+                MessageBox.Show("Matches multiple windows!", "Failed to attach", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+			}
 
             if (mgr.SetWallpaper(wndHandle, (int) numericUpDownPosX.Value, (int) numericUpDownPosY.Value, (int) numericUpDownSizeX.Value, (int) numericUpDownSizeY.Value))
             {

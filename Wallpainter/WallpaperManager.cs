@@ -46,6 +46,15 @@ namespace Wallpainter
             if (progman == IntPtr.Zero)
                 throw new InvalidOperationException("Failed to retrieve progman!");
         }
+		~WallpaperManager()
+		{
+            //Remove from wallpaper
+            if (curWindow.IsValid())
+            {
+                Restore(curWindow);
+                curWindow.Reset();
+            }
+		}
 
         public bool SetWallpaper(IntPtr wp, int posx = 0, int posy = 0, int width = -1, int height = -1)
         {
