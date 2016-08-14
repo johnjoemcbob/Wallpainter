@@ -52,7 +52,14 @@ namespace Wallpainter
 			int matches = 0;
 			foreach (Process proc in Process.GetProcesses())
 			{
-				if (proc.MainWindowTitle.ToLower().Contains(textboxWindowName.Text.ToLower()))
+				// If exact then use that, otherwise find close match
+				if (proc.MainWindowTitle == textboxWindowName.Text)
+				{
+					wndHandle = proc.MainWindowHandle;
+					matches = 1;
+                    break;
+				}
+				else if (proc.MainWindowTitle.ToLower().Contains(textboxWindowName.Text.ToLower()))
 				{
 					wndHandle = proc.MainWindowHandle;
 					matches++;
