@@ -37,6 +37,7 @@ namespace Wallpainter
         }
 
         private Window curWindow;
+		private string curWindowTitle;
         private IntPtr progman = IntPtr.Zero;
 
         public WallpaperManager()
@@ -56,7 +57,7 @@ namespace Wallpainter
             }
 		}
 
-        public bool SetWallpaper(IntPtr wp, int posx = 0, int posy = 0, int width = -1, int height = -1)
+        public bool SetWallpaper(IntPtr wp, string title = "N/A", int posx = 0, int posy = 0, int width = -1, int height = -1)
         {
             //Remove from wallpaper
             if (curWindow.IsValid())
@@ -67,6 +68,7 @@ namespace Wallpainter
 
             //set the next
             curWindow = Set(wp, posx, posy, width, height);
+			curWindowTitle = title;
 
             return curWindow.IsValid();
         }
@@ -76,7 +78,21 @@ namespace Wallpainter
             return curWindow.Handle;
         }
 
-        private Window Set(IntPtr hwnd, int posx = 0, int posy = 0, int width = -1, int height = -1)
+		public string GetWallpaperWindowTitle()
+		{
+			string text;
+			if (curWindow.Handle == IntPtr.Zero)
+			{
+				text = "Wallpainter - N/A";
+			}
+			else
+			{
+				text = "Wallpainter - " + curWindowTitle;
+			}
+			return text;
+		}
+
+		private Window Set(IntPtr hwnd, int posx = 0, int posy = 0, int width = -1, int height = -1)
         {
             uint style = WinAPI.GetWindowLong(hwnd, (int)WinAPI.WindowLongFlags.GWL_STYLE);
 

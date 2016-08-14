@@ -29,7 +29,18 @@ namespace Wallpainter
 
 			if (FormWindowState.Minimized == this.WindowState)
 			{
-				notifyIcon1.Visible = true;
+				string text = mgr.GetWallpaperWindowTitle();
+				{
+					if ( text.Length >= 64 )
+					{
+						// LESS than 64, Count ellipses
+						int newlength = 64 - 1 - 3;
+						text = text.Remove( newlength );
+						text += "...";
+					}
+				}
+                notifyIcon1.Text = text;
+                notifyIcon1.Visible = true;
 				notifyIcon1.ShowBalloonTip(500);
 				this.Hide();
 			}
@@ -49,19 +60,22 @@ namespace Wallpainter
         {
 			//Also ability to startup programs to set
 			IntPtr wndHandle = IntPtr.Zero;
-			int matches = 0;
+			string wndTitle = "";
+            int matches = 0;
 			foreach (Process proc in Process.GetProcesses())
 			{
 				// If exact then use that, otherwise find close match
 				if (proc.MainWindowTitle == textboxWindowName.Text)
 				{
 					wndHandle = proc.MainWindowHandle;
-					matches = 1;
+					wndTitle = proc.MainWindowTitle;
+                    matches = 1;
                     break;
 				}
 				else if (proc.MainWindowTitle.ToLower().Contains(textboxWindowName.Text.ToLower()))
 				{
 					wndHandle = proc.MainWindowHandle;
+					wndTitle = proc.MainWindowTitle;
 					matches++;
 				}
 			}
@@ -76,10 +90,11 @@ namespace Wallpainter
                 return;
 			}
 
-            if (mgr.SetWallpaper(wndHandle, (int) numericUpDownPosX.Value, (int) numericUpDownPosY.Value, (int) numericUpDownSizeX.Value, (int) numericUpDownSizeY.Value))
+            if (mgr.SetWallpaper(wndHandle, wndTitle, (int) numericUpDownPosX.Value, (int) numericUpDownPosY.Value, (int) numericUpDownSizeX.Value, (int) numericUpDownSizeY.Value))
             {
                 buttonDetach.Enabled = true;
-            }
+				this.Text = mgr.GetWallpaperWindowTitle();
+			}
         }
 
         private void buttonDetach_Click(object sender, EventArgs e)
