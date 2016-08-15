@@ -101,7 +101,8 @@ namespace Wallpainter
         {
             mgr.SetWallpaper(IntPtr.Zero);
             buttonDetach.Enabled = false;
-        }
+			this.Text = mgr.GetWallpaperWindowTitle();
+		}
 
         private void WallpainterMain_FormClosing(object sender, FormClosingEventArgs e)
         {
